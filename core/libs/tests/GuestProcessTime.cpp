@@ -11,6 +11,7 @@ int APS5_VABI sceKernelUsleep_nid_postfix(KernelUseconds microseconds);
 
 static constexpr int SCE_OK = 0;
 static constexpr std::uint64_t MICROSECONDS_PER_SECOND = 1000000ULL;
+static constexpr std::uint64_t NANOSECONDS_PER_SECOND = 1000000000ULL;
 
 static void Require(bool value) { if (!value) std::abort(); }
 
@@ -27,7 +28,7 @@ int main() {
     }
 
     const std::uint64_t frequency = sceKernelGetProcessTimeCounterFrequency();
-    Require(frequency == MICROSECONDS_PER_SECOND);
+    Require(frequency == NANOSECONDS_PER_SECOND);
 
     const std::uint64_t startTime = sceKernelGetProcessTime();
     const std::uint64_t startCounter = sceKernelGetProcessTimeCounter();
@@ -40,7 +41,7 @@ int main() {
     const std::uint64_t elapsedTime = endTime - startTime;
     const std::uint64_t elapsedCounter = endCounter - startCounter;
     Require(elapsedCounter > 0);
-    const std::uint64_t scaledCounterUs = elapsedCounter * MICROSECONDS_PER_SECOND / frequency;
+    const std::uint64_t scaledCounterUs = elapsedCounter / 1000ULL;
     const std::uint64_t toleranceUs = 2000;
     Require(scaledCounterUs + toleranceUs >= elapsedTime);
     Require(elapsedTime + toleranceUs >= scaledCounterUs);

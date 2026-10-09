@@ -148,7 +148,7 @@ static const bool g_timerSelfTest = [] {
 extern "C" {
 
 std::uint64_t APS5_VABI sceKernelGetProcessTime() {
-    return sceKernelGetProcessTimeCounter();
+    return sceKernelGetProcessTimeCounter() / 1000ULL;
 }
 
 std::uint64_t APS5_VABI sceKernelGetProcessTimeCounter() {
@@ -157,11 +157,11 @@ std::uint64_t APS5_VABI sceKernelGetProcessTimeCounter() {
     const Clock::time_point now = Clock::now();
     if (now < start) throw std::runtime_error("sceKernelGetProcessTimeCounter: steady clock moved backwards");
     return static_cast<std::uint64_t>(
-        std::chrono::duration_cast<std::chrono::microseconds>(now - start).count());
+        std::chrono::duration_cast<std::chrono::nanoseconds>(now - start).count());
 }
 
 std::uint64_t APS5_VABI sceKernelGetProcessTimeCounterFrequency() {
-    return 1000000ULL;
+    return 1000000000ULL;
 }
 
 // Debug aid: APS5_TRACE_USLEEP reports every 2000 calls which guest call sites sleep, so a CPU
