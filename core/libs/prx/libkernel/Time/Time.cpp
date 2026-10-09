@@ -5,6 +5,7 @@
 #include "prx/libkernel/KernelErrors.hpp"
 #include <algorithm>
 #include <cerrno>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -147,15 +148,20 @@ static const bool g_timerSelfTest = [] {
 extern "C" {
 
 std::uint64_t APS5_VABI sceKernelGetProcessTime() {
-    return (GetMonotonicNanos() - GetStartNanos()) / 1000ULL;
+    return sceKernelGetProcessTimeCounter();
 }
 
 std::uint64_t APS5_VABI sceKernelGetProcessTimeCounter() {
-    return GetMonotonicNanos() - GetStartNanos();
+    using Clock = std::chrono::steady_clock;
+    static const Clock::time_point start = Clock::now();
+    const Clock::time_point now = Clock::now();
+    if (now < start) throw std::runtime_error("sceKernelGetProcessTimeCounter: steady clock moved backwards");
+    return static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::microseconds>(now - start).count());
 }
 
 std::uint64_t APS5_VABI sceKernelGetProcessTimeCounterFrequency() {
-    return 1000000000ULL;
+    return 1000000ULL;
 }
 
 // Debug aid: APS5_TRACE_USLEEP reports every 2000 calls which guest call sites sleep, so a CPU
